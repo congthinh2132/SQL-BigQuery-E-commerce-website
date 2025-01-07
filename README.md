@@ -1,13 +1,13 @@
 # SQL-BigQuery-E-commerce-Website Analysis
 
 ## Table of Contents
-1. [Introduction](#introduction)  
-2. [Objectives](#objectives)  
-3. [Dataset Overview](#dataset-overview)  
-   - [Importing the Dataset](#importing-the-dataset)  
-   - [Dataset Description](#dataset-description)  
-4. [Data Processing and Exploratory Data Analysis (EDA)](#data-processing-and-exploratory-data-analysis-eda)  
-5. [Analytical Questions and SQL Queries](#analytical-questions-and-sql-queries)  
+1. [Introduction](#1-introduction)  
+2. [Objectives](#2-objectives)  
+3. [Dataset Overview](#3-dataset-overview)  
+   - [Importing the Dataset](#31-importing-the-dataset)  
+   - [Dataset Description](#32-dataset-description)  
+4. [Data Processing and Exploratory Data Analysis (EDA)](#4-data-processing-and-exploratory-data-analysis-eda)  
+5. [Analytical Questions and SQL Queries](#5-analytical-questions-and-sql-queries)  
    - [5.1 Total Visits, Pageviews, Transactions, and Revenue (January–March 2017)](#51-total-visits-pageviews-transactions-and-revenue-januarymarch-2017)  
    - [5.2 Bounce Rate by Traffic Source (July 2017)](#52-bounce-rate-by-traffic-source-july-2017)  
    - [5.3 Revenue by Traffic Source (Weekly and Monthly) in June 2017](#53-revenue-by-traffic-source-weekly-and-monthly-in-june-2017)  
@@ -16,7 +16,7 @@
    - [5.6 Average Money Spent Per Session (2017)](#56-average-money-spent-per-session-2017)  
    - [5.7 Products Purchased Alongside “YouTube Men’s Vintage Henley” (July 2017)](#57-products-purchased-alongside-youtube-mens-vintage-henley-july-2017)  
    - [5.8 Cohort Analysis: Product Views to Add-to-Cart Conversion](#58-cohort-analysis-product-views-to-add-to-cart-conversion)  
-6. [Conclusion](#conclusion)  
+6. [Conclusion](#6-conclusion)  
 ## 1. Introduction
 This project analyzes an e-commerce website's dataset using SQL and Google BigQuery. The dataset provides insights into website traffic, user behavior, and e-commerce transactions. The primary objective is to uncover actionable insights to enhance website performance, improve user experience, and optimize sales.
 
