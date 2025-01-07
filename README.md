@@ -17,28 +17,54 @@
    - [5.7 Products Purchased Alongside “YouTube Men’s Vintage Henley” (July 2017)](#57-products-purchased-alongside-youtube-mens-vintage-henley-july-2017)  
    - [5.8 Cohort Analysis: Product Views to Add-to-Cart Conversion](#58-cohort-analysis-product-views-to-add-to-cart-conversion)  
 6. [Conclusion](#6-conclusion)  
-## 1. Introduction
-This project analyzes an e-commerce website's dataset using SQL and Google BigQuery. The dataset provides insights into website traffic, user behavior, and e-commerce transactions. The primary objective is to uncover actionable insights to enhance website performance, improve user experience, and optimize sales.
+## 1. Introduction:
+The E-commerce Dataset in the public Google BigQuery dataset. The dataset is about the information of users sessions on their website collected in 2017.
 
-## 2. Objectives
+Using this dataset, the author conducts various analyses to examine website activity during that year. These include calculating the bounce rate, identifying the days with the highest revenue, studying user behavior across pages, and performing other types of analysis. The objective of this project is to gain insights into the business performance, evaluate the efficiency of marketing activities, and analyze product-related trends.
+
+To accomplish this, the author utilizes Google BigQuery to write and execute SQL queries, enabling effective data exploration and analysis.
+
+## 2. Objectives:
 The project aims to:
 - Understand traffic sources and user behavior patterns.  
-- Analyze e-commerce performance metrics such as revenue, conversions, and product sales.  
-- Perform cohort analysis to identify conversion trends and user retention.  
+- Analyze e-commerce performance metrics such as revenue, transactions, bounce rate and product sales.  
 - Provide data-driven recommendations for improving e-commerce business strategies.
 
-## 3. Dataset Overview
-### 3.1 Importing the Dataset
+## 3. Dataset Overview:
+### 3.1 Importing the Dataset:
 The dataset used in this project is the public Google Analytics sample dataset available on BigQuery:  
 `bigquery-public-data.google_analytics_sample.ga_sessions_*`  
 
-This dataset contains website session data from an e-commerce store, including traffic source information, user interactions, and e-commerce transactions. 
+To use the dataset, follow these steps:
+- Log in to your Google Cloud Platform account and create a new project if you don't have one.
+- Navigate to the BigQuery console by selecting the BigQuery option in the Google Cloud Console.
+- Select your project from the project selector dropdown.
+- In the Explorer panel, click on the + ADD DATA button and choose "Pin a project".
+- In the dialog that appears, enter the project ID: bigquery-public-data and click "Pin".
+- Once the project is pinned, expand the bigquery-public-data project in the Explorer panel.
+- Navigate to the google_analytics_sample dataset and expand it.
+- You'll find multiple tables named ga_sessions_ and click on to open it.
 
-### 3.2 Dataset Description
+### 3.2 Dataset Description:
 The dataset is structured as follows:
-- **Session-level Data**: Fields like `fullVisitorId`, `visitId`, `date`, and `trafficSource` provide information about each user session.
-- **Hit-level Data**: Nested fields contain details of individual interactions (hits) during a session, such as pageviews, events, and transactions.
-- **Product-level Data**: Nested fields include information about products viewed or purchased during transactions, such as `productName`, `productRevenue`, and `productQuantity`.
+|Field Name|Data Type|Description|
+|:----|:----|:----|
+|fullVisitorId|STRING|Unique identifier for the user.|
+|visitId|INTEGER|Unique identifier for the session, unique only to the user.|
+|visitNumber|INTEGER|Session number for the user; 1 for the first session.|
+|visitStartTime|INTEGER|Timestamp of the session start (POSIX time).|
+|date|STRING|Date of the session in YYYYMMDD format.|
+|totals|RECORD|Aggregate metrics for the session, including hits, pageviews, and transactions.|
+|trafficSource|RECORD|Information about the traffic source from which the session originated.|
+|device|RECORD|Details about the user's device, such as browser, operating system, and device category.|
+|geoNetwork|RECORD|Geographical information about the user, including country, region, and city.|
+|customDimensions|RECORD|Custom dimensions set for the session.|
+|hits|RECORD|Detailed information about each interaction (hit) during the session, such as pageviews and events.|
+
+And others nested fields with Data type "RECORD", You can see more at https://support.google.com/analytics/answer/3437719?hl=en
+
+
+
 
 ## 4. Data Processing and Exploratory Data Analysis (EDA)
 - Preprocessed data to handle nested and repeated fields using `UNNEST` in SQL.
@@ -49,27 +75,61 @@ The dataset is structured as follows:
 
 ### 5.1 Total Visits, Pageviews, Transactions, and Revenue (January–March 2017)
 Query: Calculate key metrics such as total visits, pageviews, transactions, and revenue for the first quarter of 2017.
+``` sql 
+SELECT EXTRACT(MONTH FROM PARSE_DATE("%Y%m%d",date)) month,
+   SUM(totals.visits) visits,
+   SUM(totals.pageviews) pagesviews,
+   SUM(totals.transactions) transactions,
+   ROUND(SUM(totals.totalTransactionRevenue)/POW(10,6),2) revenue
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`
+WHERE _table_suffix between "0101" AND "0331"
+GROUP BY month
+```
+![image](https://github.com/user-attachments/assets/a5019ce8-3e9c-483a-9029-1a0bb0d1fc1e)
 
 ### 5.2 Bounce Rate by Traffic Source (July 2017)
 Query: Calculate the bounce rate for each traffic source during July 2017.
+``` sql 
+SELECT trafficSource.source, SUM(totals.visits) visits,
+   SUM(totals.bounces) total_bounces,
+   ROUND(SUM(totals.bounces)/ SUM(totals.visits)*100, 2) bounce_rate
+   FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`
+   GROUP BY trafficSource.source
+   ORDER BY visits DESC
+```
+![image](https://github.com/user-attachments/assets/91179abc-8dc6-4f1d-8e79-b9324508b3ef)
 
 ### 5.3 Revenue by Traffic Source (Weekly and Monthly) in June 2017
 Query: Analyze revenue generated by different traffic sources at weekly and monthly levels for June 2017.
+``` sql 
+
+```
 
 ### 5.4 Average Number of Pageviews by Purchaser Type
 Query: Determine the average number of pageviews segmented by purchaser type (e.g., new vs. returning purchasers).
+``` sql 
+
+```
 
 ### 5.5 Average Number of Transactions per User (July 2017)
 Query: Calculate the average number of transactions per user who made a purchase in July 2017.
+``` sql 
 
+```
 ### 5.6 Average Money Spent Per Session (2017)
 Query: Calculate the average revenue generated per session, including only sessions with purchases in 2017.
+``` sql 
 
+```
 ### 5.7 Products Purchased Alongside “YouTube Men’s Vintage Henley” (July 2017)
 Query: Identify other products purchased by customers who bought the product “YouTube Men’s Vintage Henley” during July 2017.
+``` sql 
 
+```
 ### 5.8 Cohort Analysis: Product Views to Add-to-Cart Conversion
 Query: Create a cohort map to calculate the conversion rate from product views to add-to-cart actions.
+``` sql 
 
+```
 ## 6. Conclusion
 
