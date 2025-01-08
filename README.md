@@ -1,21 +1,21 @@
-# SQL-BigQuery-E-commerce-Website Analysis
+# SQL BigQuery E-commerce Website Exploring
 
 ## Table of Contents
 1. [Introduction](#1-introduction)  
 2. [Objectives](#2-objectives)  
 3. [Dataset Overview](#3-dataset-overview)  
-   - [Importing the Dataset](#31-importing-the-dataset)  
-   - [Dataset Description](#32-dataset-description)  
+   - 3.1 [Importing the Dataset](#31-importing-the-dataset)  
+   - 3.2 [Dataset Description](#32-dataset-description)  
 4. [Data Processing and Exploratory Data Analysis (EDA)](#4-data-processing-and-exploratory-data-analysis-eda)  
 5. [Analytical Questions and SQL Queries](#5-analytical-questions-and-sql-queries)  
-   - [5.1 Total Visits, Pageviews, Transactions, and Revenue (January–March 2017)](#51-total-visits-pageviews-transactions-and-revenue-januarymarch-2017)  
-   - [5.2 Bounce Rate by Traffic Source (July 2017)](#52-bounce-rate-by-traffic-source-july-2017)  
-   - [5.3 Revenue by Traffic Source (Weekly and Monthly) in June 2017](#53-revenue-by-traffic-source-weekly-and-monthly-in-june-2017)  
-   - [5.4 Average Number of Pageviews by Purchaser Type](#54-average-number-of-pageviews-by-purchaser-type)  
-   - [5.5 Average Number of Transactions per User (July 2017)](#55-average-number-of-transactions-per-user-july-2017)  
-   - [5.6 Average Money Spent Per Session (2017)](#56-average-money-spent-per-session-2017)  
-   - [5.7 Products Purchased Alongside “YouTube Men’s Vintage Henley” (July 2017)](#57-products-purchased-alongside-youtube-mens-vintage-henley-july-2017)  
-   - [5.8 Cohort Analysis: Product Views to Add-to-Cart Conversion](#58-cohort-analysis-product-views-to-add-to-cart-conversion)  
+   - 5.1 [Total Visits, Pageviews, Transactions, and Revenue (January–March 2017)](#51-total-visits-pageviews-transactions-and-revenue-januarymarch-2017)  
+   - 5.2 [Bounce Rate by Traffic Source (July 2017)](#52-bounce-rate-by-traffic-source-july-2017)  
+   - 5.3 [Revenue by Traffic Source (Weekly and Monthly) in June 2017](#53-revenue-by-traffic-source-weekly-and-monthly-in-june-2017)  
+   - 5.4 [Average Number of Pageviews by Purchaser Type](#54-average-number-of-pageviews-by-purchaser-type)  
+   - 5.5 [Average Number of Transactions per User (July 2017)](#55-average-number-of-transactions-per-user-july-2017)  
+   - 5.6 [Average Money Spent Per Session (2017)](#56-average-money-spent-per-session-2017)  
+   - 5.7 [Products Purchased Alongside “YouTube Men’s Vintage Henley” (July 2017)](#57-products-purchased-alongside-youtube-mens-vintage-henley-july-2017)  
+   - 5.8 [Cohort Analysis: Product Views to Add-to-Cart Conversion](#58-cohort-analysis-product-views-to-add-to-cart-conversion)  
 6. [Conclusion](#6-conclusion)  
 ## 1. Introduction:
 The E-commerce Dataset in the public Google BigQuery dataset. The dataset is about the information of users sessions on their website collected in 2017.
@@ -46,22 +46,27 @@ To use the dataset, follow these steps:
 - You'll find multiple tables named ga_sessions_ and click on to open it.
 
 ### 3.2 Dataset Description:
-The dataset is structured as follows:
+The dataset contains only columns i used, structured as follows:
 |Field Name|Data Type|Description|
 |:----|:----|:----|
-|fullVisitorId|STRING|Unique identifier for the user.|
-|visitId|INTEGER|Unique identifier for the session, unique only to the user.|
-|visitNumber|INTEGER|Session number for the user; 1 for the first session.|
-|visitStartTime|INTEGER|Timestamp of the session start (POSIX time).|
-|date|STRING|Date of the session in YYYYMMDD format.|
-|totals|RECORD|Aggregate metrics for the session, including hits, pageviews, and transactions.|
-|trafficSource|RECORD|Information about the traffic source from which the session originated.|
-|device|RECORD|Details about the user's device, such as browser, operating system, and device category.|
-|geoNetwork|RECORD|Geographical information about the user, including country, region, and city.|
-|customDimensions|RECORD|Custom dimensions set for the session.|
-|hits|RECORD|Detailed information about each interaction (hit) during the session, such as pageviews and events.|
+|fullVisitorId|STRING|The unique visitor ID.|
+|date|STRING|The date of the session in YYYYMMDD format.|
+|totals|RECORD|This section contains aggregate values across the session.|
+|totals.bounces|INTEGER|Total bounces (for convenience). For a bounced session, the value is 1, otherwise it is null.|
+|totals.hits|INTEGER|Total number of hits within the session.|
+|totals.pageviews|INTEGER|Total number of pageviews within the session.|
+|totals.visits|INTEGER|The number of sessions (for convenience). This value is 1 for sessions with interaction events. The value is null if there are no interaction events in the session.|
+|trafficSource.source|STRING|The source of the traffic source. Could be the name of the search engine, the referring hostname, or a value of the utm_source URL parameter.|
+|hits|RECORD|This row and nested fields are populated for any and all types of hits.|
+|hits.eCommerceAction|RECORD|This section contains all of the ecommerce hits that occurred during the session. This is a repeated field and has an entry for each hit that was collected.|
+|hits.eCommerceAction.action_type|STRING|The action type. Click through of product lists = 1, Product detail views = 2, Add product(s) to cart = 3, Remove product(s) from cart = 4, Check out = 5, Completed purchase = 6, Refund of purchase = 7, Checkout options = 8, Unknown = 0.Usually this action type applies to all the products in a hit, with the following exception: when hits.product.isImpression = TRUE, the corresponding product is a product impression that is seen while the product action is taking place (i.e., a product in list view).Example query to calculate number of products in list views:SELECTCOUNT(hits.product.v2ProductName)FROM [foo-160803:123456789.ga_sessions_20170101]WHERE hits.product.isImpression == TRUEExample query to calculate number of products in detailed view:SELECTCOUNT(hits.product.v2ProductName),FROM[foo-160803:123456789.ga_sessions_20170101]WHEREhits.ecommerceaction.action_type = 2AND ( BOOLEAN(hits.product.isImpression) IS NULL OR BOOLEAN(hits.product.isImpression) == FALSE )|
+|hits.product|RECORD|This row and nested fields will be populated for each hit that contains Enhanced Ecommerce PRODUCT data.|
+|hits.product.productQuantity|INTEGER|The quantity of the product purchased.|
+|hits.product.productRevenue|INTEGER|The revenue of the product, expressed as the value passed to Analytics multiplied by 10^6 (e.g., 2.40 would be given as 2400000).|
+|hits.product.v2ProductName|STRING|Product Name.|
 
-And others nested fields with Data type "RECORD", You can see more at https://support.google.com/analytics/answer/3437719?hl=en
+
+And you can see more at https://support.google.com/analytics/answer/3437719?hl=en
 
 
 
@@ -70,6 +75,29 @@ And others nested fields with Data type "RECORD", You can see more at https://su
 - Preprocessed data to handle nested and repeated fields using `UNNEST` in SQL.
 - Explored key metrics such as total sessions, revenue, and traffic sources to gain an initial understanding of the data.
 - Performed data cleaning and filtering to focus on relevant e-commerce transactions.
+
+**Total customers in 2017**
+``` sql
+SELECT
+  COUNT(fullVisitorId) AS num_row
+FROM
+  `bigquery-public-data.google_analytics_sample.ga_sessions_2017*`;
+```
+![image](https://github.com/user-attachments/assets/770e5c33-b84f-47b3-8693-8dcd139521b6)
+
+**UNNEST hits and products**
+```sql
+SELECT 
+  date, 
+  fullVisitorId,
+  eCommerceAction.action_type,
+  product.v2ProductName,
+  product.productRevenue,
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+UNNEST(hits) AS hits,
+UNNEST(hits.product) as product
+```
+![image](https://github.com/user-attachments/assets/1f727ccd-56ab-424e-bcf2-d57e95d11058)
 
 ## 5. Analytical Questions and SQL Queries
 
@@ -137,7 +165,7 @@ ORDER BY revenue DESC
 ![image](https://github.com/user-attachments/assets/953c9083-dd57-4390-af56-5266309a7cf7)
 
 ### 5.4 Average Number of Pageviews by Purchaser Type
-Query: Determine the average number of pageviews segmented by purchaser type (e.g., new vs. returning purchasers).
+Query: Determine the average number of pageviews segmented by purchaser type.
 ``` sql 
 WITH purchaser_data AS (
   SELECT
@@ -222,6 +250,7 @@ WHERE A.fullVisitorId = B.customer_purchased_VH
 GROUP BY product.v2ProductName
 ORDER BY Amount DESC
 ```
+
 ### 5.8 Cohort Analysis: Product Views to Add-to-Cart Conversion
 Query: Create a cohort map to calculate the conversion rate from product views to add-to-cart actions.
 ``` sql 
